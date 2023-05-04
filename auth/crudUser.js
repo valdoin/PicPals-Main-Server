@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const jwtSecret = require("./jwtVariables")
 
 //gere les requetes d'inscription au service
+//renvoie une requete contenant un cookie de connexion et l'user id
 exports.register = async (req, res, next) => {
     const { name, phone, password } = req.body //recuperation du corps de la requete
 
@@ -52,6 +53,7 @@ exports.register = async (req, res, next) => {
 };
 
 //gere les requetes de connexion au service
+//renvoie un cookie de connection et l'user id
 exports.login = async (req, res, next) => {
     const { phone, password } = req.body
     // verifie si les champs phone et password ne sont pas vides
@@ -142,6 +144,7 @@ exports.update = async (req, res, next) => {
 }
 
 //gere les requete de suppression d'utilisateur
+//renvoie l'user ayant été supprimé
 exports.deleteUser = async (req, res, next) => {
     const { id } = req.body
     await User.findByIdAndDelete(id)

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
 
 // crée un post en bd en lien avec l'user connecté
+//une requete contenant un message de succés est renvoyé
 exports.createPost = async (req, res, next) => {
     const { url } = req.body
     const token = req.cookies.jwt
@@ -89,6 +90,7 @@ exports.createPost = async (req, res, next) => {
 }
 
 // delete le post d'id 'postId'
+//renvoie une requete avec le post
 exports.deletePost = async (req, res, next) => {
     const { postId } = req.body
     await Post.findByIdAndDelete(postId)
@@ -109,6 +111,8 @@ exports.deletePost = async (req, res, next) => {
             }))
 }
 
+//
+//renvoie une requete contenant un post
 exports.getPost = async (req, res, next) => {
     const token = req.cookies.jwt
     const { postId } = req.body
@@ -150,6 +154,8 @@ exports.getPost = async (req, res, next) => {
     }
 }
 
+//
+//renvoie une requete contenant un tableau de posts
 exports.getFriendPosts = async (req, res, next) => {
     const token = req.cookies.jwt
     

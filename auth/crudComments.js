@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
 
 // crée un post en bd en lien avec l'user connecté
+//renvoie un requete contenant le commentaire ainsi que l'id du post commenté
 exports.createComment = async (req, res, next) => {
     const { body, postId } = req.body
     const token = req.cookies.jwt
