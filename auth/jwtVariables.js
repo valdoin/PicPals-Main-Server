@@ -1,0 +1,2 @@
+const jwtSecret = 'ebd75e00f162e0c3028ff35e59ed5707a51a1fd4d01ff9156681bbf355eb1593a80d13'
+module.exports = jwtSecret
