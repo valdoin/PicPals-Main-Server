@@ -1,9 +1,13 @@
 const express = require("express")
 const bodyParser = require('body-parser')
+const multer = require('multer')
 const cookieParser = require("cookie-parser");
-const connectDB = require("./db")/*
+const connectDB = require("./db")
+const initStorage = require("./storage");
+/*
 const { adminAuth, userAuth } = require("./middleware/auth")
 */
+//Setting storage engine
 
 connectDB();
 const app = express()

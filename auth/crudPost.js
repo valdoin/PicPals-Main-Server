@@ -3,14 +3,15 @@ const { User } = require("../model/User")
 const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
 const { post } = require("./route")
+const initStorage = require('../storage')
 
 // crée un post en bd en lien avec l'user connecté
 //une requete contenant un message de succés est renvoyé
 exports.createPost = async (req, res, next) => {
     const token = req.cookies.jwt
-    const { image } = req.files
+    console.log(req.file.filename)
 
-
+    
     if (token) {
             //on decode le token afin de recuperer l'utilisateur authentifié
             jwt.verify(token, jwtSecret, (err, decodedToken) => {
@@ -23,7 +24,7 @@ exports.createPost = async (req, res, next) => {
             })
     }
     else{
-        res.status(401).json({ message: "no token porvided" })
+        return res.status(401).json({ message: "no token porvided" })
     }
 
     //on cherche l'user en bd
@@ -31,29 +32,23 @@ exports.createPost = async (req, res, next) => {
         author = await User.findById(userId)
     }
     catch(err){
-        res.status(400).json({
+        return res.status(400).json({
             message: "could not find user",
             error: err.message
         })
     }
-    //TODO: set posted a true
+
     if(author){
         if(!author.posted){
             try{
-                
-                if(!image){
-                    return res.status(400).json({ message: "no file" })
-                }
 
                 Post.create({
                     author: author.id,
                 })
                 .then((post)=>{
 
-                    image.mv('./img/' + post._id)
-
                     try{
-                        post.url = './img/' + post._id
+                        post.url = `${req.protocol}://${req.get('host')}/posts/img/${req.file.filename}`
                         post.save()
                     }catch(err){
                         res.status(400).json({
@@ -77,7 +72,7 @@ exports.createPost = async (req, res, next) => {
                         message: "post successfully created"
                     })
                 })
-                .catch( (err) => res.status(404).json({ message: "post could not be created"}))
+                .catch( (err) => res.status(404).json({ message: "post could not be created", error: err}))
                 
 
             }
@@ -87,26 +82,26 @@ exports.createPost = async (req, res, next) => {
                     author.save()
                 }
                 catch(err){
-                    res.status(400).json({
+                    return res.status(400).json({
                         message: "could not save posting status",
                         error: err.message
                     })
                 }
 
-                res.status(400).json({
+                return res.status(400).json({
                     message: "could not create post",
                     error: err.message
                 })
             }
         }
         else{
-            res.status(400).json({
+            return res.status(400).json({
                 message: "user has already posted today"
             })
         }
     }
     else{
-        res.status(400).json({
+        return res.status(400).json({
             message: "user not found"
         })
     }

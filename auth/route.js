@@ -3,7 +3,10 @@ const router = express.Router()
 const { register, login, deleteUser, requestFriend } = require("./crudUser")
 const { createPost, deletePost, getPost, getFriendPosts } = require("./crudPost")
 const { createComment } = require("./crudComments")
-const { authenticateUser, authenticateUserBeforePostDelete, postFromFriend } = require("../middleware/auth")
+const { authenticateUser, authenticateUserBeforePostDelete, postFromFriend, authenticateBeforePost } = require("../middleware/auth")
+const initStorage = require('../storage')
+
+upload = initStorage()
 
 //user
 router.route("/register").post(register)
@@ -14,7 +17,7 @@ router.route("/deleteUser").delete(authenticateUser, deleteUser)
 router.route("/requestFriend").post(requestFriend)
 
 //post
-router.route("/createPost").post(createPost)
+router.route("/createPost").post(authenticateBeforePost, upload.single('image'), createPost)
 router.route("/deletePost").delete(authenticateUserBeforePostDelete, deletePost)
 router.route('/getPost').get(getPost)
 router.route("/getFriendPosts").get(getFriendPosts)

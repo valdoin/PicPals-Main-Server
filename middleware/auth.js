@@ -94,3 +94,38 @@ exports.postFromFriend = async (req, res, next) => {
     }
 
 }
+
+exports.authenticateBeforePost = (req, res, next) => {
+    const token = req.cookies.jwt
+
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user authentifié ait pour role 'admin' ou que le post appartienne a un de ses amis 
+            else {
+                User.findById(decodedToken.id)
+                    .then((user) => {
+                        if(user){
+                            if(!user.posted){
+                                next()
+                            }
+                            else{
+                                return res.status(401).json({ message: 'user has already posted today'})
+                            }
+                        }
+                        else{
+                            return res.status(401).json({ message: "not authorized"})
+                        }
+
+                    })
+
+                
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
+}
