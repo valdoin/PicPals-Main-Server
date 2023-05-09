@@ -23,4 +23,5 @@ router.route("/getFriendPosts").get(getFriendPosts)
 router.route("/createComment").post(postFromFriend, createComment)
 
 
+
 module.exports = router

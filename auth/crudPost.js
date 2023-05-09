@@ -2,12 +2,13 @@ const Post = require("../model/Post")
 const { User } = require("../model/User")
 const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
+const { post } = require("./route")
 
 // crée un post en bd en lien avec l'user connecté
 //une requete contenant un message de succés est renvoyé
 exports.createPost = async (req, res, next) => {
-    const { url } = req.body
     const token = req.cookies.jwt
+    const { image } = req.files
 
 
     if (token) {
@@ -39,28 +40,50 @@ exports.createPost = async (req, res, next) => {
     if(author){
         if(!author.posted){
             try{
-                try{
-                    //author.posted = true
-                    author.save()
+                
+                if(!image){
+                    return res.status(400).json({ message: "no file" })
                 }
-                catch(err){
-                    res.status(400).json({
-                        message: "could not save posting status",
-                        error: err.message
-                    })
-                }
-                await Post.create({
-                    author: author.id,
-                    url,
-                })
 
-                res.status(201).json({
-                    message: "post successfully created"
+                Post.create({
+                    author: author.id,
                 })
+                .then((post)=>{
+
+                    image.mv('./img/' + post._id)
+
+                    try{
+                        post.url = './img/' + post._id
+                        post.save()
+                    }catch(err){
+                        res.status(400).json({
+                            message: "could not save post url",
+                            error: err.message
+                        })
+                    }                    
+
+                    try{
+                        author.posted = true
+                        author.save()
+                    }
+                    catch(err){
+                        res.status(400).json({
+                            message: "could not save posting status",
+                            error: err.message
+                        })
+                    }
+
+                    res.status(201).json({
+                        message: "post successfully created"
+                    })
+                })
+                .catch( (err) => res.status(404).json({ message: "post could not be created"}))
+                
+
             }
             catch (err){
                 try{
-                    //author.posted = false
+                    author.posted = false
                     author.save()
                 }
                 catch(err){
