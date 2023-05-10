@@ -240,7 +240,7 @@ exports.getFriendList = async (req, res, next) => {
             res.status(401).json({ message: "token error" })
         } 
         else {
-            User.findById(decodedToken.id).then((user) => {
+            User.findById(decodedToken.id).populate({path: "friends", select:"name phone -_id"}).then((user) => {
               if(user) {
                 res.status(200).json({friends: user.friends})
               }
