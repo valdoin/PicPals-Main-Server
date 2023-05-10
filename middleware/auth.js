@@ -103,7 +103,7 @@ exports.authenticateBeforePost = (req, res, next) => {
             if(err){
                 return res.status(401).json({ message: "not authorized", error: err.message })
             } 
-            //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user authentifié ait pour role 'admin' ou que le post appartienne a un de ses amis 
+            //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user soit authentifié et n'ai pas posté
             else {
                 User.findById(decodedToken.id)
                     .then((user) => {
@@ -121,6 +121,27 @@ exports.authenticateBeforePost = (req, res, next) => {
 
                     })
 
+                
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
+}
+
+exports.authenticateBeforeAccessingImg = async (req, res, next) => {
+    const token = req.cookies.jwt
+
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user soit : l'auteur du post, un ami de l'autheur ou un admin
+            else {
+                
+                next()
                 
             }
         })

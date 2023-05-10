@@ -4,6 +4,7 @@ const multer = require('multer')
 const cookieParser = require("cookie-parser");
 const connectDB = require("./db")
 const initStorage = require("./storage");
+const { authenticateBeforeAccessingImg } = require("./middleware/auth");
 /*
 const { adminAuth, userAuth } = require("./middleware/auth")
 */
@@ -24,6 +25,7 @@ process.on("unhandledRejection", err => {
     server.close(() => process.exit(1))
 })
 
+app.use('/posts/img',authenticateBeforeAccessingImg ,express.static(__dirname + '/posts/img'))
 app.use("/api/auth", require("./auth/route"))
 /*
 app.get("/admin", adminAuth, (req, res) => res.send("admin route"))

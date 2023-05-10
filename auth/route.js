@@ -22,8 +22,10 @@ router.route("/deletePost").delete(authenticateUserBeforePostDelete, deletePost)
 router.route('/getPost').get(getPost)
 router.route("/getFriendPosts").get(getFriendPosts)
 
+
 //comments
 router.route("/createComment").post(postFromFriend, createComment)
+
 
 
 
