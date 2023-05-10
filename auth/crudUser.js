@@ -227,3 +227,31 @@ exports.requestFriend = async (req, res, next) => {
     }
 
 }
+
+exports.getFriendList = async (req, res, next) => {
+  const token = req.cookies.jwt
+  if(token){
+      jwt.verify(token, jwtSecret, (err, decodedToken) => {
+        if(err){
+            res.status(401).json({ message: "token error" })
+        } 
+        else {
+            User.findById(decodedToken.id).then((user) => {
+              if(user) {
+                res.status(200).json({friends: user.friends})
+              }
+              else {
+                return res.status(400).json({message: "no such user."})
+              }
+
+
+            })
+          }
+  })
+}
+      
+  else{
+    res.status(400).json({ message: "no token provided" })
+  }
+
+}
