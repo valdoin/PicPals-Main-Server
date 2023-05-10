@@ -162,7 +162,7 @@ exports.requestFriend = async (req, res, next) => {
 
     try{
       //il s'agit de la cible de la demande d'ami
-      target = await User.findOne({phone})
+      target = await User.findOne({ phone })
     }
     catch(err){
       res.status(400).json({
@@ -179,18 +179,22 @@ exports.requestFriend = async (req, res, next) => {
           else {
               User.findById(decodedToken.id).then((user) => {
                 //si on a deja envoyé la demande
-                if(user.friendRequestSent.includes(id)){
+                if(user.friendRequestSent.includes(target._id)){
                   res.status(400).json({ message: "user already requested" })
                 }
+                //si l'user a deja la target en ami
+                else if(user.friends.includes(target._id)){
+                  res.status(400).json({ message: "user already friend" })
+                }
                 //si l'user qu'on demande nous a demandé auparavant, on l'ajoute aux amis
-                else if(user.friendRequestReceived.includes(id)){
-                  user.friends.push(id)
+                else if(user.friendRequestReceived.includes(target._id)){
+                  user.friends.push(target._id)
                   target.friends.push(user._id)
 
                   user.populate('friendRequestReceived')
                   user.populate('friendRequestSent')
 
-                  user.friendRequestReceived.pull({_id: id})
+                  user.friendRequestReceived.pull({_id: target._id})
                   target.friendRequestSent.pull({_id: user._id})
                   
                   user.save()
@@ -199,12 +203,12 @@ exports.requestFriend = async (req, res, next) => {
                   res.status(200).json({ message: "friend added" })
                 }
                 //si la cible est l'user
-                else if(id === decodedToken.id){
+                else if(target._id === decodedToken.id){
                   res.status(401).json({ message: "cannot send a friend request to self" })
                 }
                 //sinon, on envoie la demande
                 else{
-                  user.friendRequestSent.push(id)
+                  user.friendRequestSent.push(target._id)
                   target.friendRequestReceived.push(user._id)
                   user.save()
                   target.save()
