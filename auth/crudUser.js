@@ -158,11 +158,11 @@ exports.deleteUser = async (req, res, next) => {
 //gere les demandes d'ami
 exports.requestFriend = async (req, res, next) => {
     const token = req.cookies.jwt
-    const { id } = req.body
+    const { phone } = req.body
 
     try{
       //il s'agit de la cible de la demande d'ami
-      target = await User.findById(id)
+      target = await User.findOne({phone})
     }
     catch(err){
       res.status(400).json({
