@@ -174,7 +174,7 @@ exports.getPost = async (req, res, next) => {
 
 //
 //renvoie une requete contenant un tableau de posts
-exports.getFriendPosts = async (req, res, next) => {
+exports.getFriendsPosts = async (req, res, next) => {
     const token = req.cookies.jwt
     
     if (token) {
