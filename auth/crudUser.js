@@ -250,6 +250,9 @@ exports.getFriendList = async (req, res, next) => {
 
 
             })
+            .catch((err) => {
+              return res.status(400).json({message: "could not get friend list", error: err})
+            })
           }
   })
 }
@@ -258,4 +261,47 @@ exports.getFriendList = async (req, res, next) => {
     res.status(400).json({ message: "no token provided" })
   }
 
+}
+
+exports.deleteFriend = async (req, res, next) => {
+  const token = req.cookies.jwt
+  const { phone } = req.body
+
+  if(token){
+      jwt.verify(token, jwtSecret, (err, decodedToken) => {
+        if(err){
+            res.status(401).json({ message: "token error" })
+        } 
+        else {
+            User.findById(decodedToken.id).then((user) => {
+              if(user) {
+                User.findOne({ phone }).then((target) => {
+                  if(target){
+                    try{
+                      user.friends.pull({_id : target._id})
+                      target.friends.pull({_id: user._id})
+                      user.save()
+                      target.save()
+                      res.status(200).json({ message: "friend successfully deleted" })
+                    }catch(err){
+                      return res.status(400).json({ message: "could not delete user", error : err })
+                    }
+                  }
+                  else{
+                    return res.status(400).json({ message: "this friend does not exist" })
+                  }
+                })
+                .catch((err) => {
+                  return res.status(400).json({ message: "could not delete user", error : err })
+                })
+              }
+              else {
+                return res.status(400).json({message: "no such user."})
+              }
+            })
+          }
+      })
+    }else{
+    res.status(400).json({ message: "no token provided" })
+  }
 }
