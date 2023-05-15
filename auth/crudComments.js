@@ -15,14 +15,13 @@ exports.createComment = async (req, res, next) => {
             jwt.verify(token, jwtSecret, (err, decodedToken) => {
                 if(err){
                     res.status(401).json({ message: "token error" })
-                } 
+                }
                 else {
                     Comment.create({
                         author: decodedToken.id,
                         body
                     })
                     .then((comment) => {
-                        console.log(comment)
                         Post.findById(postId).then((post) => {
                             if(post){
                                 post.comments.push(comment)

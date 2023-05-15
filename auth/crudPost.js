@@ -11,8 +11,13 @@ const { Phrase } = require("../model/Phrase")
 //une requete contenant un message de succés est renvoyé
 exports.createPost = async (req, res, next) => {
     const token = req.cookies.jwt
-    console.log(req.file.filename)
 
+    if(!req.file){
+        return res.status(400).json({message : "no file"})
+    }
+    if (req.file.mimetype != "image/png" && req.file.mimetype != "image/jpg" && req.file.mimetype != "image/jpeg"){
+        return res.status(400).json({ message: "file is not an image"})
+    }
     
     if (token) {
             //on decode le token afin de recuperer l'utilisateur authentifié
@@ -201,7 +206,6 @@ exports.getFriendsPosts = async (req, res, next) => {
                     })
                     .sort([['date', -1]])
                     .then((posts) => {
-                        console.log(posts)
                         res.status(200).json({message: "posts successfully fetched", posts })
                     })
                     .catch((err) => {
