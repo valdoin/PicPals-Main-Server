@@ -187,13 +187,13 @@ exports.getFriendsPosts = async (req, res, next) => {
     
     if (token) {
         //on decode le token afin de recuperer l'utilisateur authentifié
-        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+        jwt.verify(token, jwtSecret, async (err, decodedToken) => {
             if(err){
                 res.status(401).json({ message: "token error" })
             } 
             else {
                 try{
-                    currentPhrase = Phrase.findById(getCurrentPhrase()).phrase;
+                    currentPhrase = await Phrase.findById(await getCurrentPhrase());
                 }
                 catch(err){
                     res.status(400).json({ message: "error", error: err})
@@ -202,8 +202,9 @@ exports.getFriendsPosts = async (req, res, next) => {
                 User.findById(decodedToken.id).then((user) => {
                     Post.find({
                         author: {$in: [user.friends, user] },
-                        phrase: currentPhrase
+                        phrase: currentPhrase._id
                     })
+                    .populate('author')
                     .sort([['date', -1]])
                     .then((posts) => {
                         res.status(200).json({message: "posts successfully fetched", posts })

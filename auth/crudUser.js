@@ -180,8 +180,10 @@ exports.requestFriend = async (req, res, next) => {
           } 
           else {
               User.findById(decodedToken.id).then((user) => {
+                
                 //si on a deja envoyé la demande
                 if(user.friendRequestSent.includes(target._id)){
+                  
                   res.status(400).json({ message: "user already requested" })
                 }
                 //si l'user a deja la target en ami
@@ -190,6 +192,7 @@ exports.requestFriend = async (req, res, next) => {
                 }
                 //si l'user qu'on demande nous a demandé auparavant, on l'ajoute aux amis
                 else if(user.friendRequestReceived.includes(target._id)){
+                  
                   user.friends.push(target._id)
                   target.friends.push(user._id)
 

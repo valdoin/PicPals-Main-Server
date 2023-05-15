@@ -12,7 +12,7 @@ exports.getCurrentPhrase = async () => {
 
     phrase = await(await Phrase.find().sort({date: -1}).limit(1)).at(0)
 
-    return phrase._id.toString()
+    return phrase._id
 }
 
 exports.getPhrase = async (req, res, next) => {

@@ -24,6 +24,6 @@ process.on("unhandledRejection", err => {
     server.close(() => process.exit(1))
 })
 
-app.use('/posts/img',authenticateBeforeAccessingImg ,express.static(__dirname + '/posts/img'))
+app.use('/posts/img',/*authenticateBeforeAccessingImg,*/express.static(__dirname + '/posts/img'))
 app.use("/api/auth", require("./auth/route"))
 
