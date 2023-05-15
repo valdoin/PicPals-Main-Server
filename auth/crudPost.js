@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
 const { post } = require("./route")
 const initStorage = require('../storage')
+const { getCurrentPhrase } = require("./crudPhrase")
+const { Phrase } = require("../model/Phrase")
 
 // crée un post en bd en lien avec l'user connecté
 //une requete contenant un message de succés est renvoyé
@@ -41,9 +43,10 @@ exports.createPost = async (req, res, next) => {
     if(author){
         if(!author.posted){
             try{
-
+                currentPhrase = await getCurrentPhrase()
                 Post.create({
                     author: author.id,
+                    phrase: currentPhrase,
                 })
                 .then((post)=>{
 
@@ -184,11 +187,17 @@ exports.getFriendsPosts = async (req, res, next) => {
                 res.status(401).json({ message: "token error" })
             } 
             else {
+                try{
+                    currentPhrase = Phrase.findById(getCurrentPhrase()).phrase;
+                }
+                catch(err){
+                    res.status(400).json({ message: "error", error: err})
+                }
                 //on cherche l'user en bd puis on cherche dans les posts de ses amis et les siens que l'on tri par date (du plus recent au plus ancien)
                 User.findById(decodedToken.id).then((user) => {
                     Post.find({
-                        author: {$in: [user.friends, user] }
-                        //TODO ne fetch que les posts au dela de la date de la derniere notification
+                        author: {$in: [user.friends, user] },
+                        phrase: currentPhrase
                     })
                     .sort([['date', -1]])
                     .then((posts) => {

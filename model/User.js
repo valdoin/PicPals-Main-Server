@@ -34,7 +34,8 @@ const UserSchema = new Mongoose.Schema({
     friends: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     friendRequestSent: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     friendRequestReceived: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'Users' }],
-    
+
+    notifications:[{type: String}],
 })
 
 

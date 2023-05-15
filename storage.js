@@ -6,10 +6,14 @@ const checkFileType = function(file, cb) {
     const extName = fileTypes.test(path.extname(file.originalname).toLowerCase())
     const mimeType = fileTypes.test(file.mimeType)
 
-    if(extName){
-        return cb(null, true)
+    if(file){
+        if(extName){
+            return cb(null, true)
+        }else{
+            cb('error: only images are accepted')
+        }
     }else{
-        cb('error: only images are accepted')
+        cb('error : no images')
     }
 }
 

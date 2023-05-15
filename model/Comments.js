@@ -3,7 +3,7 @@ const { UserSchema } = require('./User')
 
 const CommentSchema = new Mongoose.Schema({
     author: { type: Mongoose.Schema.Types.ObjectId, ref: 'Users' },
-    date: Date,
+    date: { type: Date, default: Date.now },
     body: String
 })
 

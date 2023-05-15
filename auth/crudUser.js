@@ -40,7 +40,8 @@ exports.register = async (req, res, next) => {
             });
             res.status(201).json({
               message: "User successfully created",
-              user: user._id,
+              id: user._id,
+              name: user.name,
             });
         })
         .catch((error) =>
@@ -90,7 +91,8 @@ exports.login = async (req, res, next) => {
               });
               res.status(201).json({
                 message: "User successfully Logged in",
-                user: user._id,
+                id: user._id,
+                name: user.name,
               });
             } else {
               res.status(400).json({ message: "Login not succesful" });
