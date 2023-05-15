@@ -5,6 +5,7 @@ const { createPost, deletePost, getPost, getFriendsPosts } = require("./crudPost
 const { createComment } = require("./crudComments")
 const { authenticateUser, authenticateUserBeforePostDelete, postFromFriend, authenticateBeforePost } = require("../middleware/auth")
 const initStorage = require('../storage')
+const { getCurrentPhrase, getPhrase } = require("./crudPhrase")
 
 upload = initStorage()
 
@@ -23,6 +24,9 @@ router.route("/createPost").post(authenticateBeforePost, upload.single('image'),
 router.route("/deletePost").delete(authenticateUserBeforePostDelete, deletePost)
 router.route('/getPost').get(getPost)
 router.route("/getFriendsPosts").get(getFriendsPosts)
+
+//phrase
+router.route("/getPhrase").get(getPhrase)
 
 
 //comments
