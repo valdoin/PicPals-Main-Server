@@ -6,6 +6,7 @@ const { post } = require("./route")
 const initStorage = require('../storage')
 const { getCurrentPhrase } = require("./crudPhrase")
 const { Phrase } = require("../model/Phrase")
+const { createHasPostedNotification } = require("./notificationCreator")
 
 // crée un post en bd en lien avec l'user connecté
 //une requete contenant un message de succés est renvoyé
@@ -75,6 +76,8 @@ exports.createPost = async (req, res, next) => {
                             error: err.message
                         })
                     }
+
+                    createHasPostedNotification(userId)
 
                     res.status(201).json({
                         message: "post successfully created"
@@ -212,6 +215,48 @@ exports.getFriendsPosts = async (req, res, next) => {
                     .catch((err) => {
                         res.status(400).json({message: "error while fetching posts", error: err.message })
                     })
+                })
+                .catch((err) => {
+                    res.status(400).json({ message: "error while finding user", error: err.message })
+                })
+            }
+        })
+    }
+    else{
+        res.status(401).json({ message: "no token porvided" })
+    }
+}
+
+exports.getUserPosts = (req, res, next) => {
+    const token = req.cookies.jwt
+    const { phone } = req.body
+    
+    if (token) {
+        //on decode le token afin de recuperer l'utilisateur authentifié
+        jwt.verify(token, jwtSecret, async (err, decodedToken) => {
+            if(err){
+                res.status(401).json({ message: "token error" })
+            } 
+            else {
+                try{
+                    target = await User.findOne({"phone": phone})
+                }
+                catch(err){
+                    res.status(400).json({ message: "error", error: err})
+                }
+                //on cherche l'user en bd puis on cherche dans les posts de ses amis et les siens que l'on tri par date (du plus recent au plus ancien)
+                User.findById(decodedToken.id).then(async (user) => {
+                    if(user.id == target._id || user.friends.includes(target._id)){
+                        try{
+                            targetPosts = await Post.find({author: target._id})
+                        }catch(err){
+                            return res.status(400).json({message: "could not fetch target posts", error: err.message})
+                        }
+                        res.status(200).json({message: "posts successfully fetched", posts: targetPosts})
+                    }
+                    else{
+                        return res.status(400).json({message: "target is not a friend nor yourself"})
+                    }
                 })
                 .catch((err) => {
                     res.status(400).json({ message: "error while finding user", error: err.message })

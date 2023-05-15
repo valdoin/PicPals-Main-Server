@@ -5,11 +5,13 @@ const cookieParser = require("cookie-parser");
 const connectDB = require("./db")
 const initStorage = require("./storage");
 const { authenticateBeforeAccessingImg } = require("./middleware/auth");
+const { createTimeToPostNotification, deleteAllNotifications, createHasPostedNotification } = require("./auth/notificationCreator");
 
 
 
 
 connectDB()
+
 const app = express()
 
 app.use(bodyParser.json())
