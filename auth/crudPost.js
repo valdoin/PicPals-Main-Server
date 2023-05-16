@@ -2,7 +2,7 @@ const Post = require("../model/Post")
 const { User } = require("../model/User")
 const jwt = require("jsonwebtoken")
 const jwtSecret = require("./jwtVariables")
-const { post } = require("./route")
+const { post, search } = require("./route")
 const initStorage = require('../storage')
 const { getCurrentPhrase } = require("./crudPhrase")
 const { Phrase } = require("../model/Phrase")
@@ -77,8 +77,19 @@ exports.createPost = async (req, res, next) => {
                         })
                     }
 
-                    createHasPostedNotification(userId)
-
+                    /*createHasPostedNotification(userId)
+                    User.findById(userId).then((user) => {
+                        User.updateMany({_id: {$in: [user.friends]}}, {$push: {notifications: `hasposted:${userId}`}})
+                    })
+*/
+                    User.findById(id).then((user) => {
+                        User.find({_id: {$in: [user.friends]}}).then((friends) => {
+                            friends.forEach((friend) => {
+                                User.findByIdAndUpdate(friend._id, {$push: {notifications: `hasposted:${userId}`}})
+                            })
+                        })
+                        
+                    })
                     res.status(201).json({
                         message: "post successfully created"
                     })
@@ -153,13 +164,15 @@ exports.getPost = async (req, res, next) => {
                 res.status(401).json({ message: "token error" })
             } 
             else {
-                //on cherche l'user en bd puis on cherche lele post
+                //on cherche l'user en bd puis on cherche le post
                 User.findById(decodedToken.id).then((user) => {
                     if(decodedToken.role !== "admin"){
                         Post.findOne({
                             author: {$in: [user.friends, user] },
                             _id: postId
                         })
+                        .select("-__v")
+                        .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
                         .then((post) => {
                             res.status(200).json({message: "post successfully fetched", post })
                         })
@@ -201,13 +214,22 @@ exports.getFriendsPosts = async (req, res, next) => {
                 catch(err){
                     res.status(400).json({ message: "error", error: err})
                 }
+                
+                console.log("DANS LES POSTS")
                 //on cherche l'user en bd puis on cherche dans les posts de ses amis et les siens que l'on tri par date (du plus recent au plus ancien)
                 User.findById(decodedToken.id).then((user) => {
+                    if(user.friends.length > 0){
+                        authorSearch = user.friends.concat(user._id)
+                    }
+                    else{
+                        authorSearch = [user._id]
+                    }
                     Post.find({
-                        author: {$in: [user.friends, user] },
+                        author: {$in: authorSearch },
                         phrase: currentPhrase._id
                     })
-                    .populate('author')
+                    .select("-phrase -__v")
+                    .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
                     .sort([['date', -1]])
                     .then((posts) => {
                         res.status(200).json({message: "posts successfully fetched", posts })

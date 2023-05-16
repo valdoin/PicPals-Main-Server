@@ -245,7 +245,7 @@ exports.getFriendList = async (req, res, next) => {
             res.status(401).json({ message: "token error" })
         } 
         else {
-            User.findById(decodedToken.id).populate({path: "friends", select:"name phone -_id"}).then((user) => {
+            User.findById(decodedToken.id).populate("friends", "name phone -_id").then((user) => {
               if(user) {
                 res.status(200).json({friends: user.friends})
               }
@@ -304,9 +304,32 @@ exports.deleteFriend = async (req, res, next) => {
                 return res.status(400).json({message: "no such user."})
               }
             })
+            .catch((err) => res.status(400).json({message: "could not find user", error: err.message}))
           }
       })
     }else{
     res.status(400).json({ message: "no token provided" })
   }
+}
+
+exports.getHasPosted = async (req, res, next) => {
+  const token = req.cookies.jwt
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            else {
+                console.log("gethasposted")
+                User.findById(decodedToken.id).then((user) => {
+                  res.status(200).json({hasposted: user.posted})
+                })
+                .catch((err) => res.status(400).json({message: "error while getting posting status", error: err.message}))
+                
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
 }

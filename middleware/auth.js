@@ -140,8 +140,36 @@ exports.authenticateBeforeAccessingImg = async (req, res, next) => {
             } 
             //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user soit : l'auteur du post, un ami de l'autheur ou un admin
             else {
-                
+                console.log("auth img")
                 next()
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
+}
+
+exports.authenticateBeforeGettingHasPosted = async (req, res, next) => {
+    const token = req.cookies.jwt
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            //pour pouvoir passer a l'action suivante (dans les routes), il faut que le l'user soit : l'auteur du post, un ami de l'autheur ou un admin
+            else {
+                
+                User.findById(decodedToken.id).then((user) => {
+                    if(user){
+                        console.log("auth hasposted")
+                        next()
+                    }
+                    else{
+                        return res.status(400).json({message : "could not find user"})
+                    }
+                })
+                .catch((err) => res.status(400).json({message: "error during authentication", error: err.message}))
                 
             }
         })
