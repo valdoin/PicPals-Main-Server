@@ -42,6 +42,8 @@ exports.register = async (req, res, next) => {
               message: "User successfully created",
               id: user._id,
               name: user.name,
+              primaryColor: user.primaryColor,
+              scondaryColor: user.secondaryColor,
             });
         })
         .catch((error) =>
@@ -93,6 +95,8 @@ exports.login = async (req, res, next) => {
                 message: "User successfully Logged in",
                 id: user._id,
                 name: user.name,
+                primaryColor: user.primaryColor,
+                scondaryColor: user.secondaryColor,
               });
             } else {
               res.status(400).json({ message: "Login not succesful" });

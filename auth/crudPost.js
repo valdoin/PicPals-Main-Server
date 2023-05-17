@@ -290,3 +290,27 @@ exports.getUserPosts = (req, res, next) => {
         res.status(401).json({ message: "no token porvided" })
     }
 }
+
+exports.getUserColors = (req, res, next) => {
+    const token = req.cookies.jwt
+    
+    if (token) {
+        //on decode le token afin de recuperer l'utilisateur authentifié
+        jwt.verify(token, jwtSecret, async (err, decodedToken) => {
+            if(err){
+                res.status(401).json({ message: "token error" })
+            } 
+            else {
+                User.findById(decodedToken.id).then((user) =>
+                    res.status(200).json({ primaryColor: user.primaryColor, secondaryColor: user.secondaryColor })
+                )
+                .catch((err) => {
+                    res.status(400).json({ message: "error while finding user", error: err.message })
+                })
+            }
+        })
+    }
+    else{
+        res.status(401).json({ message: "no token porvided" })
+    }
+}

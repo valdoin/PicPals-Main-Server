@@ -12,6 +12,16 @@ const PostSchema = new Mongoose.Schema({
     comments: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'Comments' }],
     upvotes: Number,
     
+    primaryColor: {
+        type: String,
+        default: "#0d1b2a",
+        maxlength: 8,
+    },
+    secondaryColor: {
+        type: String,
+        default: "#1b263b",
+        maxlength: 8,
+    }
 })
 
 const Post = Mongoose.model("Posts", PostSchema)
