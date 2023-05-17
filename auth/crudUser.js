@@ -324,12 +324,31 @@ exports.getHasPosted = async (req, res, next) => {
                 return res.status(401).json({ message: "not authorized", error: err.message })
             } 
             else {
-                console.log("gethasposted")
                 User.findById(decodedToken.id).then((user) => {
                   res.status(200).json({hasposted: user.posted})
                 })
                 .catch((err) => res.status(400).json({message: "error while getting posting status", error: err.message}))
                 
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
+}
+
+exports.getFriendsRequests = async(req, res, next) => {
+  const token = req.cookies.jwt
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            else {
+                User.findById(decodedToken.id).populate('friendRequestReceived friendRequestSent', "-password -friends -friendRequestSent -friendRequestReceived").then((user) => {
+                  res.status(200).json({received: user.friendRequestReceived, sent: user.friendRequestSent})
+                })
+                .catch((err) => res.status(400).json({message: "error while friend requests status", error: err.message}))
             }
         })
     }
