@@ -270,7 +270,7 @@ exports.getUserPosts = (req, res, next) => {
                 User.findById(decodedToken.id).then(async (user) => {
                     if(user.id == target._id || user.friends.includes(target._id)){
                         try{
-                            targetPosts = await Post.find({author: target._id}).populate("author", "-password")
+                            targetPosts = await Post.find({author: target._id}).populate("author phrase")
                         }catch(err){
                             return res.status(400).json({message: "could not fetch target posts", error: err.message})
                         }
@@ -287,7 +287,7 @@ exports.getUserPosts = (req, res, next) => {
         })
     }
     else{
-        res.status(401).json({ message: "no token porvided" })
+        res.status(401).json({ message: "no token provided" })
     }
 }
 
