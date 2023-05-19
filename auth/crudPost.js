@@ -270,7 +270,7 @@ exports.getUserPosts = (req, res, next) => {
                 User.findById(decodedToken.id).then(async (user) => {
                     if(user.id == target._id || user.friends.includes(target._id)){
                         try{
-                            targetPosts = await Post.find({author: target._id}).populate("author phrase")
+                            targetPosts = await Post.find({author: target._id}).populate("author phrase").sort({_id: -1})
                         }catch(err){
                             return res.status(400).json({message: "could not fetch target posts", error: err.message})
                         }
