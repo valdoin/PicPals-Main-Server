@@ -12,7 +12,7 @@ upload = initStorage()
 //user
 router.route("/register").post(register)
 router.route("/login").post(login)
-router.route("/deleteUser").delete(authenticateUser, deleteUser)
+router.route("/deleteUser").delete(deleteUser)
 router.route("/getHasPosted").get(authenticateBeforeGettingHasPosted, getHasPosted)
 router.route("/getFriendsRequests").get(getFriendsRequests)
 

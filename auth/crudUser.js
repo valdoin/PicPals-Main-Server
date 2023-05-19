@@ -152,13 +152,24 @@ exports.update = async (req, res, next) => {
 //gere les requete de suppression d'utilisateur
 //renvoie l'user ayant été supprimé
 exports.deleteUser = async (req, res, next) => {
-    const { id } = req.body
-    await User.findByIdAndDelete(id)
-        .then(user => 
-            res.status(201).json({  message: "user successfully deleted", user   }))
-        .catch(err => {
-            res.status(400).json({  message: "an error occured", error: err.message })
+    const token = req.cookies.jwt
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            else {
+                User.findByIdAndDelete(decodedToken.id).then((user) => {
+                  console.log(user)
+                  res.status(200).json({message: "user successfully deleted", user})
+                })
+                .catch((err) => res.status(400).json({message: "could not delete user", error: err.message}))
+            }
         })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
 }
 
 //gere les demandes d'ami
