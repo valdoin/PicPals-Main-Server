@@ -1,5 +1,6 @@
 const { User } = require("../model/User")
 const bcrypt = require("bcryptjs")
+const { ObjectId } = require('mongodb');
 
 const jwt = require('jsonwebtoken')
 const jwtSecret = require("./jwtVariables")
@@ -159,8 +160,9 @@ exports.deleteUser = async (req, res, next) => {
                 return res.status(401).json({ message: "not authorized", error: err.message })
             } 
             else {
-                User.findByIdAndDelete(decodedToken.id).then((user) => {
-                  console.log(user)
+                User.findByIdAndDelete(decodedToken.id).then(async (user) => {
+                  
+                  await User.updateMany({$or: [{friends: {$in: [user._id]}}, {friendRequestSent: {$in: [user._id]}}, {friendRequestReceived: {$in: [user._id]}}]}, {$pullAll: {friends: [user._id], friendRequestSent: [user._id], friendRequestReceived: [user._id]}})
                   res.status(200).json({message: "user successfully deleted", user})
                 })
                 .catch((err) => res.status(400).json({message: "could not delete user", error: err.message}))
@@ -360,6 +362,29 @@ exports.getFriendsRequests = async(req, res, next) => {
                   res.status(200).json({received: user.friendRequestReceived, sent: user.friendRequestSent})
                 })
                 .catch((err) => res.status(400).json({message: "error while friend requests status", error: err.message}))
+            }
+        })
+    }
+    else{
+        res.status(400).json({ message: "no token provided" })
+    }
+}
+
+exports.getNotifications = async (req, res, next) => {
+  const token = req.cookies.jwt
+    if(token){
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            if(err){
+                return res.status(401).json({ message: "not authorized", error: err.message })
+            } 
+            else {
+              User.findByIdAndUpdate(decodedToken.id, {$set: {notifications: []}}, {returnOriginal: true, runValidators: true })
+              .then((result) => {
+                res.status(200).json({message: "notifications updated successfully", notifications: result.notifications})
+              })
+              .catch((err) => {
+                res.status(400).josn({message: "could not update notifications", error: err.message})
+              })
             }
         })
     }
