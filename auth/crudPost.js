@@ -230,6 +230,7 @@ exports.getFriendsPosts = async (req, res, next) => {
                     })
                     .select("-phrase -__v")
                     .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
+                    .populate({path: 'comments', populate:{ path: 'author', select: ['name','phone']}})
                     .sort([['date', -1]])
                     .then((posts) => {
                         res.status(200).json({message: "posts successfully fetched", posts })
