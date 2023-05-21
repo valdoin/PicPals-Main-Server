@@ -53,6 +53,9 @@ exports.createPost = async (req, res, next) => {
                 Post.create({
                     author: author.id,
                     phrase: currentPhrase,
+                    primaryColor: author.primaryColor,
+                    secondaryColor: author.secondaryColor,
+
                 })
                 .then((post)=>{
 
@@ -215,7 +218,6 @@ exports.getFriendsPosts = async (req, res, next) => {
                     res.status(400).json({ message: "error", error: err})
                 }
                 
-                console.log("DANS LES POSTS")
                 //on cherche l'user en bd puis on cherche dans les posts de ses amis et les siens que l'on tri par date (du plus recent au plus ancien)
                 User.findById(decodedToken.id).then((user) => {
                     if(user.friends.length > 0){
