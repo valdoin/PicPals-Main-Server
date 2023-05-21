@@ -7,6 +7,7 @@ const initStorage = require('../storage')
 const { getCurrentPhrase } = require("./crudPhrase")
 const { Phrase } = require("../model/Phrase")
 const { createHasPostedNotification } = require("./notificationCreator")
+const { unlinkSync } = require('fs')
 
 // crée un post en bd en lien avec l'user connecté
 //une requete contenant un message de succés est renvoyé
@@ -132,26 +133,63 @@ exports.createPost = async (req, res, next) => {
     }
 }
 
+
+
 // delete le post d'id 'postId'
 //renvoie une requete avec le post
 exports.deletePost = async (req, res, next) => {
+    const token = req.cookies.jwt
     const { postId } = req.body
-    await Post.findByIdAndDelete(postId)
-        .then(post =>{
-            if(post){
-                res.status(200).json({ message: "post deleted successfully", post})
-            }
-            else{
-                res.status(400).json({
-                    message: "no such post"
-                })
+
+    if(token){
+        jwt.verify(token, jwtSecret, async (err, decodedToken) => {
+            if(err){
+                res.status(401).json({ message: "token error" })
+            } 
+            else {
+                userLastPost = await(await Post.find({
+                    author: decodedToken.id,
+                }).sort([['date', -1]])).at(0)
+
+                console.log(userLastPost)
+
+                if(userLastPost.id != postId){
+                    return res.status(400).json({message: "can only delete latest post"})
+                }
+                Post.findByIdAndDelete(postId)
+                    .then(async(post) => {
+                        if(post){
+                            try{
+                                await User.findByIdAndUpdate(post.author, {posted: false})
+                            }catch(err){
+                                res.status(400).json({message: "could not find author", error: err.message})
+                            }
+                            try{
+                                unlinkSync(post.url.split('/').splice(3).join('/'))
+                            }catch(err){
+                                res.status(400).json({ message: "error whil deleting image", error: err.message })
+                            }
+                            res.status(200).json({ message: "post deleted successfully", post })
+                        }
+                        else{
+                            res.status(400).json({
+                                message: "no such post"
+                            })
+                        }
+                    })
+                    .catch(err =>
+                        res.status(400).json({
+                            message: "post could not be deleted",
+                            error: err.message
+                        }))
             }
         })
-        .catch(err =>
-            res.status(400).json({
-                message: "post could not be deleted",
-                error: err.message
-            }))
+    }
+    else{
+        return res.status(400).json({message: "no token provided"})
+    }
+
+    
 }
 
 //
@@ -234,8 +272,14 @@ exports.getFriendsPosts = async (req, res, next) => {
                     .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
                     .populate({path: 'comments', populate:{ path: 'author', select: ['name','phone']}})
                     .sort([['date', -1]])
-                    .then((posts) => {
-                        res.status(200).json({message: "posts successfully fetched", posts })
+                    .then(async(posts) => {
+
+                        userPost = await Post.findOne({
+                            author: user._id,
+                            phrase: currentPhrase._id
+                        }, null, {sort: {date: -1}})
+                        
+                        res.status(200).json({message: "posts successfully fetched", userPostId: userPost._id, posts })
                     })
                     .catch((err) => {
                         res.status(400).json({message: "error while fetching posts", error: err.message })
