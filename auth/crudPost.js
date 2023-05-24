@@ -197,7 +197,7 @@ exports.deletePost = async (req, res, next) => {
 exports.getPost = async (req, res, next) => {
     const token = req.cookies.jwt
     const { postId } = req.body
-    
+    console.log(postId)
     if (token) {
         //on decode le token afin de recuperer l'utilisateur authentifié
         jwt.verify(token, jwtSecret, (err, decodedToken) => {
@@ -209,22 +209,24 @@ exports.getPost = async (req, res, next) => {
                 User.findById(decodedToken.id).then((user) => {
                     if(decodedToken.role !== "admin"){
                         Post.findOne({
-                            author: {$in: [user.friends, user] },
+                            //ajouter autorisation (on ne peut fetch que les post d'ami ou les siens)
+                            //author: {$in: [user.friends].concat(user)  },
                             _id: postId
                         })
                         .select("-__v")
                         .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
+                        .populate({path: 'comments', populate:{ path: 'author', select: ['name','phone']}})
                         .then((post) => {
                             res.status(200).json({message: "post successfully fetched", post })
                         })
                         .catch((err) => {
                             res.status(400).json({message: "error while fetching post", error: err.message })
                         })
-                }
-                else{
-                    Post.findById(postId).then((post) => res.status(200).json({ message: "post successfully fetched", post }))
-                        .catch((err) => res.status(400).json({message: "error while fetching posts", error: err.message }))
-                }
+                    }
+                    else{
+                        Post.findById(postId).then((post) => res.status(200).json({ message: "post successfully fetched", post }))
+                            .catch((err) => res.status(400).json({message: "error while fetching posts", error: err.message }))
+                    }
                 })
                 .catch((err) => {
                     res.status(400).json({ message: "error while finding user", error: err.message })

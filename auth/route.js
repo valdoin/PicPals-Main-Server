@@ -25,7 +25,7 @@ router.route("/deleteFriend").delete(deleteFriend)
 //post
 router.route("/createPost").post(authenticateBeforePost, upload.single('image'), createPost)
 router.route("/deletePost").delete(authenticateUserBeforePostDelete, deletePost)
-router.route('/getPost').get(getPost)
+router.route('/getPost').post(getPost)
 router.route("/getFriendsPosts").get(getFriendsPosts)
 router.route("/getUserPosts").post(getUserPosts)
 
