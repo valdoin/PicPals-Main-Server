@@ -98,6 +98,7 @@ exports.login = async (req, res, next) => {
                 name: user.name,
                 primaryColor: user.primaryColor,
                 secondaryColor: user.secondaryColor,
+                hasposted: user.posted,
               });
             } else {
               res.status(400).json({ message: "Login not succesful" });
