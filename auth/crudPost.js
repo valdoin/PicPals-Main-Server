@@ -214,7 +214,8 @@ exports.getPost = async (req, res, next) => {
                             _id: postId
                         })
                         .select("-__v")
-                        .populate('author', "-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
+                        .populate('phrase', "-date -__v")
+                        .populate('author',"-friends -friendRequestSent -friendRequestReceived -password -notifications -__v")
                         .populate({path: 'comments', populate:{ path: 'author', select: ['name','phone']}})
                         .then((post) => {
                             res.status(200).json({message: "post successfully fetched", post })
